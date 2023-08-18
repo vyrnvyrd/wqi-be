@@ -14,7 +14,7 @@ def md5_encode(text):
 
 @auth_login.post("/auth")
 async def auth(username: str = Body(), password: str = Body()):
-  found = conn.execute(users.select().where(users.c.user_name == username)).fetchall()
+  found = conn.execute(users.select().where(users.c.user_name == username.lower())).fetchall()
   print(found)
   if found:
     if md5_encode(password) == found[0].pass_word:
