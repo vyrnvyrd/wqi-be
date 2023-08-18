@@ -18,8 +18,8 @@ async def auth(username: str = Body(), password: str = Body()):
   print(found)
   if found:
     if md5_encode(password) == found[0].pass_word:
-      return {"msg": "Welcome Back, "+found[0].user_name+"!"}
+      return {"detail": "Welcome Back, "+found[0].user_name+"!"}
     
-    raise HTTPException(status_code=401, detail="Username/password is wrong!")
+    raise HTTPException(status_code=401, detail="Username/password is wrong!",)
 
   raise HTTPException(status_code=401, detail="Username/password is wrong!")
