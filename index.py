@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes.index import user, auth_login, dokumen_api
+from routes.index import user, auth_login, dokumen_api, water_quality_api
 
 
 app = FastAPI()
@@ -25,3 +25,4 @@ app.add_middleware(
 app.include_router(user)
 app.include_router(auth_login)
 app.include_router(dokumen_api)
+app.include_router(water_quality_api)
