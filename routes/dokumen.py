@@ -18,7 +18,7 @@ def is_base64(s):
   except:
     return False
 
-@dokumen_api.post("/", tags=["Dokumen"], description="Post new document")
+@dokumen_api.post("/dokumen", tags=["Dokumen"], description="Post new document")
 async def post_dokumen(data: Dokumen):
   print(is_base64(data.file))
   if (is_base64(data.file)):
