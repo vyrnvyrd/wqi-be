@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException
+from fastapi_pagination import Page, paginate
 from config.db import conn
 from models.index import water_quality, datasets
-from schemas.index import Water_Quality
+from schemas.index import Water_Quality, Water_Quality_List
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -66,6 +67,10 @@ def classify_machine_learning(df, new_data_body):
 
   return new_pred[0]
 
+@water_quality_api.get("/water_quality", tags=["Water Quality"],response_model=Page[Water_Quality_List] , description="Get all water quality")
+async def get_list_water_quality():
+  result = conn.execute(water_quality.select()).fetchall()
+  return paginate(result)
 
 @water_quality_api.post("/water_quality", tags=["Water Quality"], description="Post new water quality")
 async def post_water_quality(data: Water_Quality):

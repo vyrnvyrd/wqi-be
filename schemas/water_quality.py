@@ -20,3 +20,9 @@ class Water_Quality(BaseModel):
   kesadahan:float
   sulfat:float
   suhu:float
+
+class Water_Quality_List(BaseModel):
+  id:int
+  nama_sumur:str
+  alamat:str
+  class_data:int
