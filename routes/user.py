@@ -5,6 +5,6 @@ from schemas.index import User
 
 user = APIRouter()
 
-@user.get("/")
+@user.get("/", tags=['Users'])
 async def read_data():
   return conn.execute(users.select()).fetchall()

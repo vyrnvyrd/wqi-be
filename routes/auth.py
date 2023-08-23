@@ -12,7 +12,7 @@ def md5_encode(text):
   encoded_text = md5_hash.hexdigest()
   return encoded_text
 
-@auth_login.post("/auth")
+@auth_login.post("/auth", tags=['Auth'])
 async def auth(username: str = Body(), password: str = Body()):
   found = conn.execute(users.select().where(users.c.user_name == username.lower())).fetchall()
   if found:
