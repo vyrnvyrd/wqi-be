@@ -17,8 +17,14 @@ def is_base64(s):
 @dokumen_api.post("/dokumen", tags=["Dokumen"], description="Post new document")
 async def post_dokumen(data: Dokumen):
   if (is_base64(data.file)):
+    decoded_content = base64.b64decode(data.file)
+    file_path = f"file/{data.title}.pdf"
+
+    with open(file_path, "wb") as f:
+      f.write(decoded_content)
+
     result = conn.execute(dokumen.insert().values(
-      file=data.file
+      file=file_path
     ))
     conn.commit()
     inserted_id = result.lastrowid
