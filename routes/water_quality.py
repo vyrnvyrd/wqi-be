@@ -90,7 +90,6 @@ async def download_saved_file(id: int):
     result_dokumen = conn.execute(dokumen.select().where(dokumen.c.id == id)).fetchall()
     if not result_dokumen:
       raise HTTPException(status_code=404)
-    print(result_dokumen)
     return FileResponse(path=result_dokumen[0].file)
 
 @water_quality_api.post("/water_quality", tags=["Water Quality"], description="Post new water quality")
@@ -147,6 +146,65 @@ async def post_water_quality(data: Water_Quality):
 
     return {
       'detail': 'Success!'
+    }
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
+  
+@water_quality_api.put("/water_quality/{id}", tags=["Water Quality"], description="Put existing water quality")
+async def put_water_quality(id:str, data: Water_Quality):
+  try:
+    result = conn.execute(datasets.select()).fetchall()
+    new_data = data
+    df = pd.DataFrame(result, columns=[
+      'nama_lokasi',
+      'zat_padat_terlarut',
+      'kekeruhan',
+      'besi',
+      'fluorida',
+      'total_hardness',
+      'chlorida',
+      'mangan',
+      'nitrat',
+      'nitrit',
+      'pH',
+      'seng',
+      'sulfat',
+      'senyawa_aktif_biru_metilen',
+      'organik',
+      'suhu',
+      'bakteri_koli',
+      'indeks_pencemaran',
+      'class'
+    ])
+    new_class = classify_machine_learning(df, new_data)
+
+    conn.execute(water_quality.update().values(
+      nama_sumur=new_data.nama_sumur,
+      id_kota=new_data.id_kota,
+      nama_kota=new_data.nama_kota,
+      id_kecamatan=new_data.id_kecamatan,
+      nama_kecamatan=new_data.nama_kecamatan,
+      id_kelurahan=new_data.id_kelurahan,
+      nama_kelurahan=new_data.nama_kelurahan,
+      alamat=new_data.alamat,
+      id_dokumen=new_data.id_dokumen,
+      zat_organik=new_data.zat_organik,
+      tds=new_data.tds,
+      mangan=new_data.mangan,
+      klorida=new_data.klorida,
+      kekeruhan=new_data.kekeruhan,
+      fluorida=new_data.fluorida,
+      ph=new_data.ph,
+      kesadahan=new_data.kesadahan,
+      sulfat=new_data.sulfat,
+      suhu=new_data.suhu,
+      class_data=new_class
+    ).where(water_quality.c.id == id))
+    conn.commit()
+
+    return {
+      'detail': 'Success!',
+      'class': str(new_class)
     }
   except Exception as e:
     raise HTTPException(status_code=500, detail=str(e))
