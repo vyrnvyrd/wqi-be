@@ -6,7 +6,7 @@ from schemas.index import Water_Quality, Water_Quality_List
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from fastapi.responses import FileResponse
+from starlette.responses import FileResponse
 
 water_quality_api = APIRouter()
 
@@ -85,10 +85,13 @@ async def get_water_quality_by_id(id: int):
     'file': data_file
   }
 
-@water_quality_api.get("/water_quality/download", tags=["Water Quality"], description="Download water quality")
-async def download_saved_file(file_path: str = Body(..., embed=True)):
-    filename=file_path.split('/')
-    return FileResponse(file_path, filename=f"{filename[1]}.jpg")
+@water_quality_api.get("/water_quality/download/{id}", tags=["Water Quality"], description="Download water quality")
+async def download_saved_file(id: int):
+    result_dokumen = conn.execute(dokumen.select().where(dokumen.c.id == id)).fetchall()
+    if not result_dokumen:
+      raise HTTPException(status_code=404)
+    print(result_dokumen)
+    return FileResponse(path=result_dokumen[0].file)
 
 @water_quality_api.post("/water_quality", tags=["Water Quality"], description="Post new water quality")
 async def post_water_quality(data: Water_Quality):
