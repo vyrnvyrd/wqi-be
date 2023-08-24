@@ -1,12 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from fastapi_pagination import Page, paginate
 from config.db import conn
-from models.index import water_quality, datasets
-from schemas.index import Water_Quality, Water_Quality_List
+from models.index import water_quality, datasets, dokumen
+from schemas.index import Water_Quality, Water_Quality_List, Water_Quality_Detail
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
+import json
 
 water_quality_api = APIRouter()
 
@@ -67,10 +67,22 @@ def classify_machine_learning(df, new_data_body):
 
   return new_pred[0]
 
-@water_quality_api.get("/water_quality", tags=["Water Quality"],response_model=Page[Water_Quality_List] , description="Get all water quality")
+@water_quality_api.get("/water_quality", tags=["Water Quality"], response_model=Page[Water_Quality_List], description="Get all water quality")
 async def get_list_water_quality():
   result = conn.execute(water_quality.select()).fetchall()
   return paginate(result)
+
+@water_quality_api.get("/water_quality/{id}", tags=["Water Quality"], description="Get water quality by id")
+async def get_water_quality_by_id(id: int):
+  result = conn.execute(water_quality.select().where(water_quality.c.id == id)).fetchall()
+  if not result:
+    raise HTTPException(status_code=404)
+  result_dokumen = conn.execute(dokumen.select().where(dokumen.c.id == result[0].id_dokumen)).fetchall()
+  data_detail = result[0]._mapping
+  data_file = result_dokumen[0]._mapping
+  return {
+    'data': data_detail
+  }
 
 @water_quality_api.post("/water_quality", tags=["Water Quality"], description="Post new water quality")
 async def post_water_quality(data: Water_Quality):
@@ -106,7 +118,7 @@ async def post_water_quality(data: Water_Quality):
       nama_kota=new_data.nama_kota,
       id_kecamatan=new_data.id_kecamatan,
       nama_kecamatan=new_data.nama_kecamatan,
-      id_kelurahan=new_data.nama_kelurahan,
+      id_kelurahan=new_data.id_kelurahan,
       nama_kelurahan=new_data.nama_kelurahan,
       alamat=new_data.alamat,
       id_dokumen=new_data.id_dokumen,

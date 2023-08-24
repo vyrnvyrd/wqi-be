@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, String, Text, Float, Integer, TIMESTAMP
+from sqlalchemy import Table, Column, String, Text, Float, Integer, ForeignKey
 from config.db import meta
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
@@ -14,7 +14,7 @@ water_quality = Table(
   Column('id_kelurahan', String(100), nullable=False),
   Column('nama_kelurahan', String(255), nullable=False),
   Column('alamat', Text, nullable=False),
-  Column('id_dokumen', Integer),
+  Column('id_dokumen', Integer, ForeignKey('dokumens.id')),
   Column('zat_organik', Float, nullable=False),
   Column('tds', Float, nullable=False),
   Column('mangan', Float, nullable=False),
