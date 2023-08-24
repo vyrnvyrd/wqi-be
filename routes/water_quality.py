@@ -1,12 +1,12 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Body
 from fastapi_pagination import Page, paginate
 from config.db import conn
 from models.index import water_quality, datasets, dokumen
-from schemas.index import Water_Quality, Water_Quality_List, Water_Quality_Detail
+from schemas.index import Water_Quality, Water_Quality_List
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-import json
+from fastapi.responses import FileResponse
 
 water_quality_api = APIRouter()
 
@@ -81,8 +81,14 @@ async def get_water_quality_by_id(id: int):
   data_detail = result[0]._mapping
   data_file = result_dokumen[0]._mapping
   return {
-    'data': data_detail
+    'data': data_detail,
+    'file': data_file
   }
+
+@water_quality_api.get("/water_quality/download", tags=["Water Quality"], description="Download water quality")
+async def download_saved_file(file_path: str = Body(..., embed=True)):
+    filename=file_path.split('/')
+    return FileResponse(file_path, filename=f"{filename[1]}.jpg")
 
 @water_quality_api.post("/water_quality", tags=["Water Quality"], description="Post new water quality")
 async def post_water_quality(data: Water_Quality):
