@@ -1,12 +1,14 @@
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, Response
 from fastapi_pagination import Page, paginate
 from config.db import conn
 from models.index import water_quality, datasets, dokumen
-from schemas.index import Water_Quality, Water_Quality_List
+from schemas.index import Water_Quality, Water_Quality_List, Water_Quality_List_Complete
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from starlette.responses import FileResponse
+from sqlalchemy import and_
+from typing import List
 
 water_quality_api = APIRouter()
 
@@ -67,6 +69,18 @@ def classify_machine_learning(df, new_data_body):
 
   return new_pred[0]
 
+@water_quality_api.get("/water_quality/cari-sumur", tags=["Water Quality"], response_model=List[Water_Quality_List_Complete], description="Get water quality by kota, kecamatan, dan kelurahan")
+async def get_water_quality_by_info(id_kota: int, id_kecamatan: int, id_kelurahan: int):
+  try:
+    conditions = and_(
+      water_quality.c.id_kota == id_kota,
+      water_quality.c.id_kecamatan == id_kecamatan,
+      water_quality.c.id_kelurahan == id_kelurahan
+    )
+    return conn.execute(water_quality.select().where(conditions)).fetchall()
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e)) 
+
 @water_quality_api.get("/water_quality", tags=["Water Quality"], response_model=Page[Water_Quality_List], description="Get all water quality")
 async def get_list_water_quality():
   result = conn.execute(water_quality.select()).fetchall()
@@ -84,6 +98,7 @@ async def get_water_quality_by_id(id: int):
     'data': data_detail,
     'file': data_file
   }
+
 
 @water_quality_api.get("/water_quality/download/{id}", tags=["Water Quality"], description="Download water quality")
 async def download_saved_file(id: int):
