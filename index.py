@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes.index import user, auth_login, dokumen_api, water_quality_api
 from fastapi_pagination import add_pagination
-
+import paho.mqtt.client as mqtt
 
 app = FastAPI()
 

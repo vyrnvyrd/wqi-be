@@ -9,8 +9,12 @@ from sklearn.ensemble import RandomForestClassifier
 from starlette.responses import FileResponse
 from sqlalchemy import and_
 from typing import List
+import paho.mqtt.client as mqtt
+import json
 
 water_quality_api = APIRouter()
+broker_address = "test.mosquitto.org"
+port = 1883
 
 def classify_machine_learning(df, new_data_body):
   # data pre-processing
@@ -223,3 +227,31 @@ async def put_water_quality(id:str, data: Water_Quality):
     }
   except Exception as e:
     raise HTTPException(status_code=500, detail=str(e))
+  
+@water_quality_api.get("/water_quality-get-initial-data/{id}", tags=["Water Quality"], description="Get water quality data mqtt by id")
+async def get_initial_data(id: int):
+  result = conn.execute(water_quality.select().where(water_quality.c.id == id)).fetchall()
+  result_dokumen = conn.execute(dokumen.select().where(dokumen.c.id == result[0].id_dokumen)).fetchall()
+  data_detail = result[0]._mapping
+  data_file = result_dokumen[0]._mapping
+  row_dict_detail = dict(data_detail)
+  row_dict_file = dict(data_file)
+  merge_data = {
+    'detail': row_dict_detail,
+    'file': row_dict_file
+  }
+  json_string = json.dumps(merge_data, indent=4)
+
+  topic = f"water-quality/data"
+
+  def on_publish(client, userdata, result):
+    print("Message published successfully")
+
+  client = mqtt.Client()
+  client.on_publish = on_publish
+
+  client.connect(broker_address, port)
+
+  client.publish(topic, json_string)
+
+  client.disconnect()
