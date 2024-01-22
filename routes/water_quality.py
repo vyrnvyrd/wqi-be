@@ -11,6 +11,7 @@ from sqlalchemy import and_
 from typing import List
 import paho.mqtt.client as mqtt
 import json
+from sklearn.metrics import accuracy_score
 
 water_quality_api = APIRouter()
 broker_address = "test.mosquitto.org"
