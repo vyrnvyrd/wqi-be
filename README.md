@@ -1,4 +1,4 @@
-# wqi-mobile
+# wqi-be
 
 # How to run this project?
 
